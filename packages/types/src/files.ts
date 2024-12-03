@@ -27,6 +27,7 @@ export type File = {
 	focal_point_y: number | null;
 	tus_id: string | null;
 	tus_data: Record<string, any> | null;
+	thumbhash: string | null;
 };
 
 export type BusboyFileStream = {
