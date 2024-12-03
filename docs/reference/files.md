@@ -308,6 +308,9 @@ Tags for the file.
 `metadata` **object**\
 Any additional metadata Directus was able to scrape from the file. For images, this includes Exif, IPTC, and ICC information.
 
+`thumbhash` **string**\
+[Thumbhash](https://evanw.github.io/thumbhash/) image placeholder data in binary format.
+
 ```json
 {
 	"id": "4f4b14fa-a43a-46d0-b7ad-90af5919bebb",
