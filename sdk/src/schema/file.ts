@@ -30,5 +30,6 @@ export type DirectusFile<Schema = any> = MergeCoreCollection<
 		metadata: Record<string, any> | null;
 		focal_point_x: number | null;
 		focal_point_y: number | null;
+		thumbhash: string | null;
 	}
 >;

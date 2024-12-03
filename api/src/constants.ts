@@ -95,6 +95,7 @@ export const SUPPORTED_FILE_METADATA_FORMATS = [
 	'image/gif',
 	'image/tiff',
 	'image/avif',
+	'image/svg+xml',
 	// support by ffprobe
 	'application/f4v',
 	'application/mxf',

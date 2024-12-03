@@ -12,7 +12,11 @@ export async function extractMetadata(
 
 	if (data.type && SUPPORTED_FILE_METADATA_FORMATS.includes(data.type)) {
 		const stream = await storage.location(storageLocation).read(data.filename_disk);
-		const { height, width, duration, description, title, tags, metadata } = await getMetadata(stream, data.type);
+
+		const { height, width, duration, description, title, tags, metadata, thumbhash } = await getMetadata(
+			stream,
+			data.type,
+		);
 
 		// Note that if this is a replace file upload, the below properties are fetched and included in the data above
 		// in the `existingFile` variable... so this will ONLY set the values if they're not already set
@@ -43,6 +47,10 @@ export async function extractMetadata(
 
 		if (!data.tags && tags) {
 			fileMeta.tags = tags;
+		}
+
+		if (!data.thumbhash && thumbhash) {
+			fileMeta.thumbhash = thumbhash;
 		}
 	}
 
