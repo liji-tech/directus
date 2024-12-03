@@ -176,3 +176,7 @@ fields:
     hidden: true
     special:
       - cast-json
+
+  - field: thumbhash
+    width: half
+    hidden: true
