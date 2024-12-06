@@ -3,8 +3,8 @@ import type { Readable } from 'node:stream';
 export type File = {
 	id: string;
 	storage: string;
-	filename_disk: string;
-	filename_download: string;
+	filename_disk: string | null;
+	filename_download: string | null;
 	title: string | null;
 	type: string | null;
 	folder: string | null;
