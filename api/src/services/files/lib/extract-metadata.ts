@@ -1,19 +1,19 @@
 import type { File } from '@directus/types';
 import { SUPPORTED_FILE_METADATA_FORMATS } from '../../../constants.js';
 import { getStorage } from '../../../storage/index.js';
-import { getMetadata, type Metadata } from '../utils/get-metadata.js';
+import { getFileMetadata, getEmbedMetadata, type FileMetadata, type EmbedMetadata } from '../utils/get-metadata.js';
 
-export async function extractMetadata(
+export async function extractFileMetadata(
 	storageLocation: string,
 	data: Partial<File> & Pick<File, 'type' | 'filename_disk'>,
-): Promise<Metadata> {
+): Promise<FileMetadata> {
 	const storage = await getStorage();
-	const fileMeta: Metadata = {};
+	const fileMeta: FileMetadata = {};
 
-	if (data.type && SUPPORTED_FILE_METADATA_FORMATS.includes(data.type)) {
+	if (data.type && SUPPORTED_FILE_METADATA_FORMATS.includes(data.type) && data.filename_disk) {
 		const stream = await storage.location(storageLocation).read(data.filename_disk);
 
-		const { height, width, duration, description, title, tags, metadata, thumbhash } = await getMetadata(
+		const { height, width, duration, description, title, tags, metadata, thumbhash } = await getFileMetadata(
 			stream,
 			data.type,
 		);
@@ -55,4 +55,8 @@ export async function extractMetadata(
 	}
 
 	return fileMeta;
+}
+
+export function extractEmbedMetadata(url: string): Promise<EmbedMetadata> {
+	return getEmbedMetadata(url);
 }
