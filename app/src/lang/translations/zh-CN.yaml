@@ -571,6 +571,7 @@ background_color: 背景色
 upload_from_device: 从设备中上传文件
 choose_from_library: 从库中选择文件
 import_from_url: 从 URL 导入文件
+import_from_embed: 从 URL 导入嵌入内容
 replace_from_device: 从设备中替换文件
 replace_from_library: 从库中替换文件
 replace_from_url: 从 URL 中替换文件

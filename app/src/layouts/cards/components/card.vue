@@ -39,32 +39,39 @@ const imgError = ref(false);
 
 const type = computed(() => {
 	if (!props.file || !props.file.type) return null;
-	if (!imgError.value && props.file.type.startsWith('image')) return null;
+	if (!imgError.value) return null;
 	return readableMimeType(props.file.type, true);
 });
 
 const imageInfo = computed(() => {
-	let fileType = undefined;
 	if (!props.file || !props.file.type) return null;
-	if (props.file.type.startsWith('image') === true) fileType = 'image';
-	if (props.file.type.includes('svg')) fileType = 'svg';
 
-	// Show icon instead of thumbnail
-	if (!fileType) return { source: undefined, fileType };
+	const info: { source: string | undefined; fileType: string | undefined } = { source: undefined, fileType: undefined };
 
-	let key = 'system-medium-cover';
-
-	if (props.crop === false) {
-		key = 'system-medium-contain';
+	if (props.file.type.startsWith('embed/') === true) {
+		info.fileType = 'embed';
+		info.source = props.file.metadata?.oEmbed?.thumbnail_url ?? undefined;
+		return info;
 	}
 
-	const source = getAssetUrl(`${props.file.id}?key=${key}&modified=${props.file.modified_on}`);
+	if (props.file.type.startsWith('image') === true) info.fileType = 'image';
+	if (props.file.type.includes('svg')) info.fileType = 'svg';
 
-	return { source, fileType };
+	// Show icon instead of thumbnail
+	if (info.fileType) {
+		const key = props.crop === false ? 'system-medium-contain' : 'system-medium-cover';
+		info.source = getAssetUrl(`${props.file.id}?key=${key}&modified=${props.file.modified_on}`);
+	}
+
+	return info;
 });
 
+const oembedProviderIcon = computed(() =>
+	props?.file?.metadata?.favicon ? `url(${props?.file?.metadata?.favicon})` : undefined,
+);
+
 const showThumbnail = computed(() => {
-	return imageInfo.value && imageInfo.value.fileType;
+	return !!(imageInfo.value && imageInfo.value.fileType);
 });
 
 const selectionIcon = computed(() => {
@@ -102,22 +109,20 @@ function handleClick() {
 		@click="handleClick"
 	>
 		<v-icon class="selector" :name="selectionIcon" @click.stop="toggleSelection" />
-		<div class="header">
+		<div class="header" :data-filetype="imageInfo?.fileType">
 			<div class="selection-fade"></div>
 			<v-skeleton-loader v-if="loading" />
 			<template v-else>
-				<v-icon-file v-if="type || imgError" :ext="type ?? ''" />
-				<template v-else>
-					<v-image
-						v-if="showThumbnail"
-						:class="imageInfo?.fileType"
-						:src="imageInfo?.source"
-						:alt="item?.title"
-						role="presentation"
-						@error="imgError = true"
-					/>
-					<v-icon v-else large :name="icon" />
-				</template>
+				<v-image
+					v-if="showThumbnail && !imgError"
+					:class="imageInfo?.fileType"
+					:src="imageInfo?.source"
+					:alt="item?.title"
+					role="presentation"
+					@error="imgError = true"
+				/>
+				<v-icon v-else-if="!type" large :name="icon" />
+				<v-icon-file v-else :ext="type" />
 			</template>
 		</div>
 		<v-skeleton-loader v-if="loading" type="text" />
@@ -160,7 +165,23 @@ function handleClick() {
 			content: '';
 		}
 
-		.image {
+		&[data-filetype="embed"]::before {
+			display: block;
+			content: '';
+			width: 100%;
+			padding-bottom: 100%;
+			position: absolute;
+			z-index: 1;
+			right: 10px;
+			bottom: 10px;
+			background-position: right bottom;
+			background-image: v-bind(oembedProviderIcon);
+			background-repeat: no-repeat;
+			background-size: 16px;
+		}
+
+		.image,
+		.embed {
 			position: absolute;
 			top: 0;
 			left: 0;

@@ -186,6 +186,7 @@ export default defineLayout<LayoutOptions, LayoutQuery>({
 				}
 
 				if (props.collection === 'directus_files' && imageSource.value === '$thumbnail') {
+					fields.push(`metadata`);
 					fields.push('modified_on');
 					fields.push('type');
 				}

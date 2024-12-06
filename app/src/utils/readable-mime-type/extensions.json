@@ -76,5 +76,9 @@
 	"audio/3gpp2": "3g2",
 	"application/x-7z-compressed": "7z",
 	"image/heic": "heic",
-	"image/heif": "heif"
+	"image/heif": "heif",
+	"embed/photo": "embed",
+	"embed/video": "embed",
+	"embed/link": "embed",
+	"embed/rich": "embed"
 }

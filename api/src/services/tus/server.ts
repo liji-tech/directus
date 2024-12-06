@@ -11,7 +11,7 @@ import { toArray } from '@directus/utils';
 import { Server, EVENTS } from '@tus/server';
 import { RESUMABLE_UPLOADS } from '../../constants.js';
 import { getStorage } from '../../storage/index.js';
-import { extractMetadata } from '../files/lib/extract-metadata.js';
+import { extractFileMetadata } from '../files/lib/extract-metadata.js';
 import { ItemsService } from '../index.js';
 import { TusDataStore } from './data-store.js';
 import { getTusLocker } from './lockers.js';
@@ -69,7 +69,7 @@ export async function createTusServer(context: Context): Promise<[Server, () => 
 				const newFile = await service.readOne(file.tus_data['metadata']['replace_id']);
 				const updateFields = pick(file, ['filename_download', 'filesize', 'type']);
 
-				const metadata = await extractMetadata(newFile.storage, {
+				const metadata = await extractFileMetadata(newFile.storage, {
 					...newFile,
 					...updateFields,
 				});
@@ -81,7 +81,7 @@ export async function createTusServer(context: Context): Promise<[Server, () => 
 
 				await service.deleteOne(file.id);
 			} else {
-				const metadata = await extractMetadata(file.storage, file);
+				const metadata = await extractFileMetadata(file.storage, file);
 
 				await service.updateOne(file.id, {
 					...metadata,

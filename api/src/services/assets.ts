@@ -77,7 +77,7 @@ export class AssetsService {
 
 		const file = (await this.filesService.readOne(id, { limit: 1 })) as File;
 
-		const exists = await storage.location(file.storage).exists(file.filename_disk);
+		const exists = file.filename_disk !== null && (await storage.location(file.storage).exists(file.filename_disk));
 
 		if (!exists) throw new ForbiddenError();
 

@@ -2,7 +2,7 @@ import { Readable, Transform } from 'node:stream';
 import type { Sharp } from 'sharp';
 import { expect, test, vi } from 'vitest';
 import { getSharpInstance } from '../lib/get-sharp-instance.js';
-import { getMetadata } from './get-metadata.js';
+import { getFileMetadata } from './get-metadata.js';
 
 vi.mock('../lib/get-sharp-instance.js', () => ({
 	getSharpInstance: vi.fn(),
@@ -23,7 +23,7 @@ test('Resolves empty object on unexpected error in transformation', async () => 
 			}) as unknown as Sharp,
 	);
 
-	const result = await getMetadata(stream, 'image/png');
+	const result = await getFileMetadata(stream, 'image/png');
 
 	expect(result).toEqual({});
 });
