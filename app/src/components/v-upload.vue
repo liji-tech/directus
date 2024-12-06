@@ -25,6 +25,7 @@ interface Props {
 	fromUser?: boolean;
 	fromUrl?: boolean;
 	fromLibrary?: boolean;
+	fromEmbed?: boolean;
 	folder?: string;
 }
 
@@ -45,8 +46,9 @@ let uploadController: Upload | null = null;
 const { uploading, progress, upload, onBrowseSelect, done, numberOfFiles } = useUpload();
 const { onDragEnter, onDragLeave, onDrop, dragging } = useDragging();
 const { url, isValidURL, loading: urlLoading, importFromURL } = useURLImport();
+const { embed, isValidEmbed, loading: embedLoading, importFromEmbed } = useEmbedImport();
 const { setSelection } = useSelection();
-const activeDialog = ref<'choose' | 'url' | null>(null);
+const activeDialog = ref<'choose' | 'url' | 'embed' | null>(null);
 const input = ref<HTMLInputElement>();
 
 onUnmounted(() => {
@@ -57,7 +59,7 @@ function validFiles(files: FileList) {
 	if (files.length === 0) return false;
 
 	for (const file of files) {
-		if (file.size === 0) return false;
+		if (file.size === 0 && file.embed === null) return false;
 	}
 
 	return true;
@@ -285,6 +287,55 @@ function useURLImport() {
 	}
 }
 
+function useEmbedImport() {
+	const embed = ref('');
+	const loading = ref(false);
+
+	const isValidEmbed = computed(() => {
+		try {
+			new URL(embed.value);
+			return true;
+		} catch {
+			return false;
+		}
+	});
+
+	return { embed, loading, isValidEmbed, importFromEmbed };
+
+	async function importFromEmbed() {
+		loading.value = true;
+
+		const data = {
+			...props.preset,
+			...(props.folder && { folder: props.folder }),
+			id: props.fileId,
+		};
+
+		try {
+			const response = await api.post(`/files/import`, {
+				url: embed.value,
+				isEmbed: true,
+				data,
+			});
+
+			emitter.emit(Events.upload);
+
+			if (props.multiple) {
+				emit('input', [response.data.data]);
+			} else {
+				emit('input', response.data.data);
+			}
+
+			activeDialog.value = null;
+			embed.value = '';
+		} catch (error) {
+			unexpectedError(error);
+		} finally {
+			loading.value = false;
+		}
+	}
+}
+
 function openFileBrowser() {
 	input.value?.click();
 }
@@ -349,6 +400,16 @@ defineExpose({ abort });
 				>
 					<v-icon name="link" />
 				</v-button>
+				<v-button
+					v-if="fromEmbed && fromUser"
+					v-tooltip="t('import_from_embed')"
+					icon
+					rounded
+					secondary
+					@click="activeDialog = 'embed'"
+				>
+					<v-icon name="code" />
+				</v-button>
 			</div>
 
 			<p class="type-label">{{ t(fromUser ? 'drag_file_here' : 'choose_from_library') }}</p>
@@ -378,6 +439,28 @@ defineExpose({ abort });
 								{{ t('cancel') }}
 							</v-button>
 							<v-button :loading="urlLoading" :disabled="isValidURL === false" @click="importFromURL">
+								{{ t('import_label') }}
+							</v-button>
+						</v-card-actions>
+					</v-card>
+				</v-dialog>
+
+				<v-dialog
+					:model-value="activeDialog === 'embed'"
+					:persistent="embedLoading"
+					@esc="activeDialog = null"
+					@update:model-value="activeDialog = null"
+				>
+					<v-card>
+						<v-card-title>{{ t('import_from_embed') }}</v-card-title>
+						<v-card-text>
+							<v-input v-model="embed" autofocus :placeholder="t('url')" :nullable="false" :disabled="embedLoading" />
+						</v-card-text>
+						<v-card-actions>
+							<v-button :disabled="embedLoading" secondary @click="activeDialog = null">
+								{{ t('cancel') }}
+							</v-button>
+							<v-button :loading="embedLoading" :disabled="isValidEmbed === false" @click="importFromEmbed">
 								{{ t('import_label') }}
 							</v-button>
 						</v-card-actions>

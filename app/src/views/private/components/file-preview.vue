@@ -5,7 +5,7 @@ import type { File } from '@directus/types';
 import { computed, toRef } from 'vue';
 
 export interface Props {
-	file: Pick<File, 'id' | 'title' | 'type' | 'modified_on' | 'width' | 'height'>;
+	file: Pick<File, 'id' | 'title' | 'type' | 'modified_on' | 'width' | 'height' | 'metadata'>;
 	preset?: string | null;
 	inModal?: boolean;
 }
@@ -46,6 +46,10 @@ const isSVG = computed(() => file.value.type?.includes('svg'));
 
 const maxHeight = computed(() => (props.inModal ? '85vh' : Math.min(file.value.height ?? 528, 528) + 'px'));
 const isSmall = computed(() => file.value.height && file.value.height < 528);
+
+const aspectRatio = computed(() => file.value.width && file.value.height? `${file.value.width / file.value.height} auto` : undefined)
+const oembedThumbnailWidth = computed(() => file.value.metadata?.oEmbed?.thumbnail_width ? `${file.value.metadata.oEmbed.thumbnail_width}px` : undefined)
+const oembedThumbnailURL = computed(() => file.value.metadata?.oEmbed?.thumbnail_url ? `url(${file.value.metadata.oEmbed.thumbnail_url})` : undefined)
 </script>
 
 <template>
@@ -59,6 +63,15 @@ const isSmall = computed(() => file.value.height && file.value.height < 528);
 		</div>
 
 		<audio v-else-if="type === 'audio'" controls :src="src" />
+
+		<!-- eslint-disable vue/no-v-html -->
+		<div
+			v-else-if="type === 'embed' && file.metadata?.oEmbed?.html"
+			:style="embedStyle"
+			class="embed"
+			v-html="file.metadata.oEmbed.html"
+		/>
+		<!-- eslint-enable vue/no-v-html -->
 
 		<div v-else class="fallback">
 			<v-icon-file :ext="type" />
@@ -111,6 +124,24 @@ const isSmall = computed(() => file.value.height && file.value.height < 528);
 		video {
 			min-height: 80px;
 			min-width: 80px;
+		}
+	}
+
+	.embed {
+		display: flex;
+		justify-content: center;
+		overflow: hidden;
+		aspect-ratio: v-bind(aspectRatio);
+		min-width: v-bind(oembedThumbnailWidth);
+		background-image: v-bind(oembedThumbnailURL);
+		background-size: cover;
+		background-repeat: no-repeat;
+		background-position: center;
+		background-color: var(--theme--background-normal);
+		border-radius: var(--theme--border-radius);
+		:deep(iframe) {
+			flex-grow: 1;
+			height: auto;
 		}
 	}
 
